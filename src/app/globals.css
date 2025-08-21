@@ -1,8 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --sonic-blue: #0066cc;
+  --sonic-light-blue: #3399ff;
+  --sonic-gold: #ffd700;
+  --sonic-red: #ff3333;
+  --robotnik-red: #cc0000;
+  --chaos-emerald: #00ff88;
 }
 
 @theme inline {
@@ -10,17 +16,117 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-sonic-blue: var(--sonic-blue);
+  --color-sonic-light-blue: var(--sonic-light-blue);
+  --color-sonic-gold: var(--sonic-gold);
+  --color-sonic-red: var(--sonic-red);
+  --color-robotnik-red: var(--robotnik-red);
+  --color-chaos-emerald: var(--chaos-emerald);
 }
 
 body {
-  background: var(--background);
+  background: linear-gradient(135deg, #001122 0%, #003366 50%, #0066cc 100%);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Sonic Animations */
+@keyframes sonicRun {
+  0% { transform: translateX(-100px) scaleX(1); }
+  50% { transform: translateX(50vw) scaleX(1); }
+  100% { transform: translateX(calc(100vw + 100px)) scaleX(1); }
+}
+
+@keyframes sonicSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes ringCollect {
+  0% { 
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% { 
+    transform: scale(1.5) rotate(180deg);
+    opacity: 0.8;
+  }
+  100% { 
+    transform: scale(0) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes chaosEmerald {
+  0%, 100% { 
+    box-shadow: 0 0 10px var(--chaos-emerald);
+    transform: scale(1);
+  }
+  50% { 
+    box-shadow: 0 0 30px var(--chaos-emerald), 0 0 60px var(--chaos-emerald);
+    transform: scale(1.1);
+  }
+}
+
+@keyframes speedLines {
+  0% { 
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% { 
+    opacity: 1;
+  }
+  100% { 
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes robotnikLaugh {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.05) rotate(-1deg); }
+  75% { transform: scale(1.05) rotate(1deg); }
+}
+
+.sonic-run {
+  animation: sonicRun 3s ease-in-out;
+}
+
+.sonic-spin {
+  animation: sonicSpin 0.5s linear infinite;
+}
+
+.ring-collect {
+  animation: ringCollect 0.6s ease-out forwards;
+}
+
+.chaos-emerald {
+  animation: chaosEmerald 2s ease-in-out infinite;
+}
+
+.speed-lines {
+  animation: speedLines 0.8s ease-out infinite;
+}
+
+.robotnik-laugh {
+  animation: robotnikLaugh 2s ease-in-out infinite;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--sonic-blue);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--sonic-gold);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ffed4e;
 }
