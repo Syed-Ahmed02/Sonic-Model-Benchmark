@@ -1,8 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Sonic Movie Color Palette */
+  --sonic-blue: #0066CC;
+  --sonic-gold: #FFD700;
+  --sonic-red: #FF0000;
+  --sonic-dark: #1a1a2e;
+  --sonic-light: #f8f9fa;
+  --emerald-green: #00FF00;
+  --robotnik-purple: #6B46C1;
+  --background: #0f1419;
+  --foreground: #ffffff;
+  --ring-yellow: #FFD700;
+  --chaos-emerald: #00FFFF;
 }
 
 @theme inline {
@@ -12,15 +23,82 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Press Start 2P', system-ui, sans-serif;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Sonic-themed animations */
+@keyframes sonicRun {
+  0% { transform: translateX(-100px) scaleX(1); }
+  50% { transform: translateX(50vw) scaleX(-1); }
+  100% { transform: translateX(calc(100vw + 100px)) scaleX(-1); }
+}
+
+@keyframes spinDash {
+  0% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(90deg) scale(1.2); }
+  50% { transform: rotate(180deg) scale(1); }
+  75% { transform: rotate(270deg) scale(1.2); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes ringPulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes chaosEmerald {
+  0% { filter: hue-rotate(0deg) brightness(1); }
+  25% { filter: hue-rotate(90deg) brightness(1.2); }
+  50% { filter: hue-rotate(180deg) brightness(1.5); }
+  75% { filter: hue-rotate(270deg) brightness(1.2); }
+  100% { filter: hue-rotate(360deg) brightness(1); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.sonic-run {
+  animation: sonicRun 3s linear infinite;
+}
+
+.spin-dash {
+  animation: spinDash 0.5s ease-in-out;
+}
+
+.ring-pulse {
+  animation: ringPulse 2s ease-in-out infinite;
+}
+
+.chaos-emerald {
+  animation: chaosEmerald 3s ease-in-out infinite;
+}
+
+.float {
+  animation: float 2s ease-in-out infinite;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--sonic-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--sonic-blue);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--sonic-gold);
 }
