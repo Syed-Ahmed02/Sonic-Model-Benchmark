@@ -1,103 +1,231 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
+
+type Ring = {
+  id: number;
+  leftPercent: number;
+  topPercent: number;
+  collected: boolean;
+};
+
+function RingIcon({ size = 36 }: { size?: number }) {
+  const stroke = Math.max(3, Math.floor(size * 0.12));
+  const r = size / 2 - stroke;
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
+      <circle cx={size / 2} cy={size / 2} r={r} fill="#fffb" />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        fill="none"
+        stroke="url(#gold)"
+        strokeWidth={stroke}
+        strokeLinecap="round"
+      />
+      <defs>
+        <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#f5c542" />
+          <stop offset="50%" stopColor="#ffd774" />
+          <stop offset="100%" stopColor="#d7a905" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
+function Emerald({ label }: { label: string }) {
+  return (
+    <div className="animate-emerald inline-flex items-center gap-2 rounded-xl px-3 py-2" style={{ boxShadow: "0 0 24px rgba(41,214,127,0.35)" }}>
+      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
+        <polygon points="12,2 22,9 19,22 5,22 2,9" fill="#29d67f" opacity="0.85" />
+        <polygon points="12,2 22,9 12,9" fill="#36f495" opacity="0.9" />
+        <polygon points="12,2 2,9 12,9" fill="#22c173" opacity="0.9" />
+      </svg>
+      <span className="text-sm font-semibold" style={{ color: "#29d67f" }}>{label}</span>
+    </div>
+  );
+}
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [ringCount, setRingCount] = useState(0);
+  const [runningKey, setRunningKey] = useState(0);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const [rings, setRings] = useState<Ring[]>(() => {
+    return Array.from({ length: 8 }).map((_, i) => ({
+      id: i,
+      leftPercent: Math.random() * 80 + 10,
+      topPercent: Math.random() * 60 + 15,
+      collected: false,
+    }));
+  });
+
+  useEffect(() => {
+    let timeout: number | undefined;
+    const onScroll = () => {
+      setRunningKey((k) => k + 1);
+      window.clearTimeout(timeout);
+      timeout = window.setTimeout(() => {
+        // cooldown between runs
+      }, 300);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const collectRing = (id: number) => {
+    setRings((prev) => prev.map((r) => (r.id === id ? { ...r, collected: true } : r)));
+    setRingCount((c) => c + 1);
+    // respawn after short delay
+    setTimeout(() => {
+      setRings((prev) => {
+        return prev.map((r) =>
+          r.id === id
+            ? {
+                id,
+                leftPercent: Math.random() * 80 + 10,
+                topPercent: Math.random() * 60 + 15,
+                collected: false,
+              }
+            : r
+        );
+      });
+    }, 900);
+  };
+
+  const ringGoalReached = ringCount >= 7;
+
+  return (
+    <div className="min-h-screen bg-sonic-gradient text-white">
+      {/* Hero */}
+      <section className="relative overflow-hidden px-6 sm:px-10 pt-16 pb-24 sm:pt-24 sm:pb-28 speedlines">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col gap-6">
+            <div className="inline-flex items-center gap-3">
+              <Emerald label={ringGoalReached ? "Chaos Control Unlocked" : "Chaos Energy Charging"} />
+              <span className="text-xs sm:text-sm opacity-80">Collect rings to power up</span>
+            </div>
+            <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight" style={{ color: "#e6f2ff", textShadow: "0 4px 30px rgba(30,144,255,0.35)" }}>
+              Sonic Vibes AI
+            </h1>
+            <p className="max-w-2xl text-sm sm:text-base opacity-90">
+              "I’m Sonic! And this is Sonic AI — a speedy, ring-powered intelligence that helps you ship at the speed of sound."
+            </p>
+            <div className="flex items-center gap-4 flex-wrap">
+              <button className="cta-button rounded-full px-6 py-3 text-sm sm:text-base font-bold">Join Sonic's Adventure</button>
+              <div className="flex items-center gap-2 rounded-full glass px-3 py-2">
+                <RingIcon size={20} />
+                <span className="text-sm font-semibold">{ringCount} rings</span>
+              </div>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/* Runner */}
+        <div key={runningKey} className="pointer-events-none absolute left-[-12%] bottom-10 sm:bottom-16 w-[80px] h-[80px] sm:w-[110px] sm:h-[110px] animate-runner">
+          <div className="w-full h-full rounded-full" style={{ background: "radial-gradient(circle at 40% 40%, #2aa4ff, #0b5bd3)", boxShadow: "0 0 30px rgba(30,144,255,0.8)" }} />
+          <div className="absolute -z-10 -right-10 top-1/2 -translate-y-1/2 w-[160px] h-[4px] sm:h-[6px]" style={{ background: "linear-gradient(90deg, rgba(30,144,255,0.85), transparent)" }} />
+        </div>
+
+        {/* Clickable Rings in hero */}
+        {rings.map((r) => (
+          <button
+            key={r.id + (r.collected ? "-collected" : "")}
+            aria-label="Collect ring"
+            onClick={() => !r.collected && collectRing(r.id)}
+            className={`absolute animate-ring transition-all duration-300 ${r.collected ? "opacity-0 scale-50" : "opacity-100 scale-100"}`}
+            style={{ left: `${r.leftPercent}%`, top: `${r.topPercent}%` }}
+          >
+            <RingIcon size={36} />
+          </button>
+        ))}
+      </section>
+
+      {/* Gotta Go Fast */}
+      <section className="px-6 sm:px-10 py-14">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-6" style={{ color: "#bfe3ff" }}>
+            Gotta Go Fast — Model Speed Demos
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[
+              { title: "Token Turbo", metric: "> 600 tok/s", desc: "Streaming generation at super-sonic rates." },
+              { title: "Latency Dash", metric: "~ 80 ms", desc: "Cold starts crushed with speed optimizations." },
+              { title: "Search Spin", metric: "x4 faster", desc: "RAG retrieval with ring-buffer caching." },
+            ].map((c) => (
+              <div key={c.title} className="card p-5 hover:translate-y-[-4px] transition-transform duration-200">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-semibold">{c.title}</span>
+                  <div className="inline-flex items-center gap-1">
+                    <RingIcon size={18} />
+                    <RingIcon size={18} />
+                  </div>
+                </div>
+                <div className="text-2xl font-extrabold" style={{ color: "#7cc7ff" }}>{c.metric}</div>
+                <p className="text-sm opacity-80 mt-1">{c.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Eggman Testimonial */}
+      <section className="px-6 sm:px-10 pb-12">
+        <div className="max-w-6xl mx-auto eggman-card rounded-2xl p-6 sm:p-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+            <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: "linear-gradient(120deg, #58111a, #d31027)" }}>
+              <span className="text-xl" aria-hidden>🦺</span>
+            </div>
+            <div className="flex-1">
+              <p className="text-lg sm:text-xl font-semibold" style={{ color: "#ffd1d7" }}>
+                Dr. Robotnik says:
+              </p>
+              <p className="opacity-90">
+                "Infuriatingly efficient. If I had Sonic Vibes AI in my arsenal, I'd have caught that blue nuisance ages ago. Its predictive routing and speed heuristics are almost worthy of my genius. Almost."
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Feature Showcase with Gamification */}
+      <section className="px-6 sm:px-10 pb-16">
+        <div className="max-w-6xl mx-auto">
+          <h3 className="text-xl sm:text-2xl font-bold mb-6" style={{ color: "#bfe3ff" }}>Features — Charge them with Rings</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[
+              { title: "Chaos Context", body: "Long-context understanding with emerald stability.", charged: ringGoalReached },
+              { title: "SpinDash Tools", body: "Tool use and function calling without friction.", charged: ringGoalReached },
+              { title: "Ring RAG", body: "Hybrid retrieval with ring-index acceleration.", charged: ringGoalReached },
+              { title: "Tails Assist", body: "Agentic plans with safe copiloting.", charged: ringGoalReached },
+              { title: "Boss Battle Safety", body: "Guardrails that actually help, not hinder.", charged: ringGoalReached },
+              { title: "Green Hill UX", body: "Speedy UI patterns tuned for user delight.", charged: ringGoalReached },
+            ].map((f) => (
+              <div key={f.title} className={`card p-5 transition-all duration-200 ${f.charged ? "ring-2 ring-[#29d67f]/60" : "hover:ring-1 hover:ring-white/15"}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-semibold">{f.title}</span>
+                  {f.charged ? <Emerald label="Powered" /> : <RingIcon size={18} />}
+                </div>
+                <p className="text-sm opacity-90">{f.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="px-6 sm:px-10 pb-24">
+        <div className="max-w-6xl mx-auto text-center">
+          <p className="mb-3 opacity-85">Ready to enter Sonic's world?</p>
+          <button className="cta-button rounded-full px-7 py-3 text-base font-extrabold">
+            Start the Adventure
+          </button>
+          <div className="mt-4 text-xs opacity-70">
+            No movie assets used. Inspired by the Sonic universe aesthetic.
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
